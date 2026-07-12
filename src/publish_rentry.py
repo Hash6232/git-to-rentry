@@ -127,16 +127,16 @@ def publish(
             sys.stderr.write(f"  metadata ({len(metadata)} chars)\n")
         return ""
 
-        csrf_token, jar, current_text = fetch_csrf(slug)
-        current_norm = normalize_md(current_text)
-        text_norm = normalize_md(text)
-        current_sha = hashlib.sha256(current_norm.encode()).hexdigest()
-        text_sha = hashlib.sha256(text_norm.encode()).hexdigest()
-        sys.stderr.write(f"  Live  SHA256: {current_sha}\n")
-        sys.stderr.write(f"  Local SHA256: {text_sha}\n")
-        if current_norm == text_norm:
-            sys.stderr.write("  Unchanged, skipping\n")
-            return ""
+    csrf_token, jar, current_text = fetch_csrf(slug)
+    current_norm = normalize_md(current_text)
+    text_norm = normalize_md(text)
+    current_sha = hashlib.sha256(current_norm.encode()).hexdigest()
+    text_sha = hashlib.sha256(text_norm.encode()).hexdigest()
+    sys.stderr.write(f"  Live  SHA256: {current_sha}\n")
+    sys.stderr.write(f"  Local SHA256: {text_sha}\n")
+    if current_norm == text_norm:
+        sys.stderr.write("  Unchanged, skipping\n")
+        return ""
 
     url = f"{RENTRY_BASE}/{slug}/edit"
     data = urllib.parse.urlencode({
