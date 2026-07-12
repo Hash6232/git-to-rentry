@@ -7,17 +7,10 @@ PAGE_TITLE: "Example Page"
 PAGE_DESCRIPTION: "Example page for automated publishing"
 SHARE_TITLE: "Example Page"
 
+COLOR_RED: true
+
+CONTAINER_PADDING:
+  - 100px
+
 ACCESS_RECOMMENDED_THEME:
-  - dark
-
-CONTAINER_MAX_WIDTH:
-  - "900px"
-
-CONTENT_FONT:
-  - Inter
-
-CONTENT_TEXT_COLOR:
-  - "#eeeeee"
-
-CONTENT_LINK_COLOR:
-  - "#55aaff"
+  - blue
