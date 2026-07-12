@@ -2,7 +2,7 @@
 """Fetch Rentry's metadata documentation and generate a structured YAML schema.
 
 Usage:
-    python src/scrape_metadata_schema.py > schemas/metadata_fields.yaml
+    python src/scrape_metadata_schema.py > src/metadata_fields.yaml
 
 The schema is generated from https://rentry.co/metadata-how.
 Re-run whenever Rentry's metadata options change.

@@ -41,7 +41,7 @@ ACCESS_RECOMMENDED_THEME:
 | `slug` | Yes | The Rentry URL (`https://rentry.co/my-page`) |
 | `secret_ref` | Yes | Name of the GitHub secret holding your edit code |
 | `theme` | No | Name of a theme in `themes/` (e.g. `example`) — merges defaults overridable by page fields |
-| `PAGE_TITLE` | No | Rentry metadata field (see `schemas/metadata_fields.yaml` for all options) |
+| `PAGE_TITLE` | No | Rentry metadata field (see `src/metadata_fields.yaml` for all options) |
 
 ### Themes
 
@@ -112,7 +112,7 @@ python src/publish_rentry.py pages/my-page --edit-code <code>
 If Rentry's metadata options change:
 
 ```bash
-python src/scrape_metadata_schema.py > schemas/metadata_fields.yaml
+python src/scrape_metadata_schema.py > src/metadata_fields.yaml
 ```
 
 ### Validating the schema
@@ -131,8 +131,7 @@ python src/validate_schema.py
 │   └── example/              # Reference page to copy from
 ├── themes/                   # Reusable metadata presets
 │   └── example.yaml          # Starting point for custom themes
-├── src/                      # Publisher and tooling (run by CI)
-├── schemas/                  # Auto-generated metadata field definitions
+├── src/                      # Publisher, tooling, and metadata schema
 ├── .github/workflows/        # CI pipeline config
 └── requirements.txt
 ```

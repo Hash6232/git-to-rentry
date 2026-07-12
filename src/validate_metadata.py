@@ -2,7 +2,7 @@
 """Validate page metadata against the Rentry schema.
 
 Local debugging tool — checks metadata.yaml against the rules in
-schemas/metadata_fields.yaml before you push.
+src/metadata_fields.yaml before you push.
 
 Usage:
     # Single page
@@ -20,7 +20,7 @@ import sys
 
 import yaml
 
-SCHEMA_PATH = "schemas/metadata_fields.yaml"
+SCHEMA_PATH = "src/metadata_fields.yaml"
 
 
 def load_schema(path: str) -> dict:

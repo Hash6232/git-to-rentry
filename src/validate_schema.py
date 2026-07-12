@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Validate the generated metadata schema against the live HTML source.
 
-Cross-references every field in schemas/metadata_fields.yaml against
+Cross-references every field in src/metadata_fields.yaml against
 https://rentry.co/metadata-how and reports discrepancies.
 
 Usage:
@@ -21,7 +21,7 @@ from scrape_metadata_schema import (
     strip_tags,
 )
 
-SCHEMA_PATH = "schemas/metadata_fields.yaml"
+SCHEMA_PATH = "src/metadata_fields.yaml"
 URL = "https://rentry.co/metadata-how"
 
 
