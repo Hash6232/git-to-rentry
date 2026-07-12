@@ -1,15 +1,25 @@
 # git-to-rentry
 
-Automated publishing pipeline for Rentry pages.
-Push markdown to `main` — your Rentry page updates automatically.
+Automatically publish Rentry pages directly from GitHub.
+
+Store your pages as Markdown, push to `main`, and GitHub Actions updates every Rentry page automatically.
+
+## Features
+
+- 🚀 Publish multiple Rentry pages from one repository
+- 📝 Write pages in plain Markdown
+- 🎨 Reusable themes for shared styling
+- 🔒 Separate edit codes for every page using GitHub Secrets
+- ✅ Metadata validation before publishing
+- ⚙️ Fully automated with GitHub Actions
 
 ---
 
-## For CI Users
+# Quick Start
 
-### 1. Add pages
+## 1. Create your pages
 
-Each directory under `pages/` becomes a separate Rentry page:
+Each directory inside `pages/` becomes its own Rentry page.
 
 ```
 pages/
@@ -24,157 +34,178 @@ pages/
     └── metadata.yaml
 ```
 
-`content.md` — your markdown:
+`content.md`
 
 ```markdown
-# My Page
+# Hello
 
-Hello from the automated publishing pipeline!
+This page will be published to Rentry.
 ```
 
-`metadata.yaml` — routing and optional styling:
+`metadata.yaml`
 
 ```yaml
-slug: my-page
-secret_ref: MY_PAGE_EDIT_CODE
+slug: hello
+secret_ref: HELLO_EDIT_CODE
 
-PAGE_TITLE: "My Page"
+PAGE_TITLE: "Hello"
 ACCESS_RECOMMENDED_THEME:
   - dark
 ```
 
-| Field | Required | What it is |
-|---|---|---|
-| `slug` | Yes | The Rentry URL (`https://rentry.co/my-page`) |
-| `secret_ref` | Yes | Name of the GitHub secret holding your edit code |
-| `theme` | No | Name of a theme in `themes/` (e.g. `example`) — merges defaults overridable by page fields |
-| `PAGE_TITLE` | No | Rentry metadata field (see `src/metadata_fields.yaml` for all options) |
+Required fields:
 
-### Themes
+| Field | Description |
+|--------|-------------|
+| `slug` | The Rentry URL (`https://rentry.co/<slug>`) |
+| `secret_ref` | GitHub secret containing the page's edit code |
 
-The `theme` field merges defaults from `themes/<name>.yaml` before publishing. Page-level metadata always overrides theme values. Copy `themes/example.yaml` to create your own:
+Everything else is optional Rentry metadata.
+
+See `src/metadata_fields.yaml` for the complete list of supported metadata fields.
+
+---
+
+## 2. (Optional) Use themes
+
+Themes provide reusable metadata defaults.
+
+Create a file like:
 
 ```yaml
-# themes/my-theme.yaml
+# themes/blog.yaml
+
 CONTAINER_MAX_WIDTH:
   - 800px
+
 CONTENT_TEXT_ALIGN:
   - left
 ```
 
-Then reference it in your page's metadata:
+Then reference it from your page:
 
 ```yaml
-slug: my-page
-theme: my-theme
-PAGE_TITLE: "My Page"
+slug: hello
+secret_ref: HELLO_EDIT_CODE
+theme: blog
+
+PAGE_TITLE: Hello
 ```
 
-### 2. Configure secrets
+Theme values are merged first.
 
-Each page's `secret_ref` must match a GitHub secret you create:
-
-| Secret name | Used by |
-|---|---|
-| `BLOG_EDIT_CODE` | when `secret_ref: BLOG_EDIT_CODE` in `pages/blog/metadata.yaml` |
-| `ABOUT_EDIT_CODE` | when `secret_ref: ABOUT_EDIT_CODE` in `pages/about/metadata.yaml` |
-| `MY_PAGE_EDIT_CODE` | ...and so on for any page |
-
-1. Go to your repository on GitHub
-2. **Settings** → **Secrets and variables** → **Actions**
-3. Click **New repository secret** for each page
-4. **Name**: your secret ref (e.g. `MY_PAGE_EDIT_CODE`)
-5. **Secret**: the page's Rentry edit code
-
-### 3. Add secrets to the workflow
-
-Open `.github/workflows/publish.yml` and add a line for each secret under the `env:` block:
-
-```yaml
-      - name: Publish pages
-        if: steps.check-pages.outputs.has_pages == 'true'
-        env:
-          MY_PAGE_EDIT_CODE: ${{ secrets.MY_PAGE_EDIT_CODE }}
-          BLOG_EDIT_CODE: ${{ secrets.BLOG_EDIT_CODE }}
-        run: python src/publish_rentry.py
-```
-
-### 4. Enable GitHub Actions
-
-1. Go to your repository on GitHub
-2. **Actions** tab
-3. If prompted, click **I understand my workflows, go ahead and enable them**
-
-### 5. Push
-
-All pages under `pages/` are published on every push:
-
-```bash
-git add pages/
-git commit -m "add my page"
-git push origin main
-```
-
-The publisher scans `pages/` and updates each page with its own edit code.
+Values defined in `metadata.yaml` always override the theme.
 
 ---
 
-## For Developers
+## 3. Add GitHub Secrets
 
-### Local setup
+Each page needs its own Rentry edit code stored as a repository secret.
+
+Example:
+
+| Secret | Used by |
+|--------|---------|
+| `BLOG_EDIT_CODE` | `pages/blog/metadata.yaml` |
+| `ABOUT_EDIT_CODE` | `pages/about/metadata.yaml` |
+| `HELLO_EDIT_CODE` | `pages/hello/metadata.yaml` |
+
+Repository → **Settings** → **Secrets and variables** → **Actions** → **New repository secret**
+
+---
+
+## 4. Expose the secrets to the workflow
+
+In `.github/workflows/publish.yml`:
+
+```yaml
+env:
+  BLOG_EDIT_CODE: ${{ secrets.BLOG_EDIT_CODE }}
+  ABOUT_EDIT_CODE: ${{ secrets.ABOUT_EDIT_CODE }}
+  HELLO_EDIT_CODE: ${{ secrets.HELLO_EDIT_CODE }}
+```
+
+Every secret referenced by `secret_ref` must be available here.
+
+---
+
+## 5. Enable GitHub Actions
+
+Open the repository's **Actions** tab and enable workflows if prompted.
+
+---
+
+## 6. Push
+
+```bash
+git add pages/
+git commit -m "Update pages"
+git push origin main
+```
+
+The workflow scans every directory in `pages/` and publishes each page using its own edit code.
+
+---
+
+# Local Development
+
+Install dependencies:
 
 ```bash
 pip install pyyaml
 ```
 
-### Testing a page
+Dry run:
 
 ```bash
-# Dry run (no actual publish)
 python src/publish_rentry.py pages/my-page --edit-code <code> --dry-run
+```
 
-# Publish
+Publish manually:
+
+```bash
 python src/publish_rentry.py pages/my-page --edit-code <code>
 ```
 
-### Regenerating the schema
+---
 
-If Rentry's metadata options change:
+# Validation
+
+Validate a single page:
 
 ```bash
-python src/scrape_metadata_schema.py > src/metadata_fields.yaml
+python src/validate_metadata.py pages/my-page
 ```
 
-### Validating the schema
+Validate every page:
+
+```bash
+python src/validate_metadata.py
+```
+
+Validate the metadata schema:
 
 ```bash
 python src/validate_schema.py
 ```
 
-### Validating metadata locally
-
-Check page metadata against the schema before pushing:
+If Rentry adds new metadata fields, regenerate the schema:
 
 ```bash
-# Single page
-python src/validate_metadata.py pages/my-page
-
-# All pages
-python src/validate_metadata.py
+python src/scrape_metadata_schema.py > src/metadata_fields.yaml
 ```
 
 ---
 
-## Project structure
+# Project Structure
 
 ```
 .
-├── _example/                 # Reference page to copy from
-├── pages/                    # Your content — add pages here
-├── themes/                   # Reusable metadata presets
-│   └── example.yaml          # Starting point for custom themes
-├── src/                      # Publisher, tooling, and metadata schema
-├── .github/workflows/        # CI pipeline config
-├── CONTRIBUTING.md           # Branch workflow and conventions
-├── requirements.txt
+├── _example/              # Example page
+├── pages/                 # Your Rentry pages
+├── themes/                # Reusable metadata presets
+├── src/                   # Publisher and tooling
+├── .github/workflows/     # GitHub Actions
+├── CONTRIBUTING.md
+└── requirements.txt
 ```
