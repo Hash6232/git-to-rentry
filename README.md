@@ -192,6 +192,13 @@ Validate every page:
 python src/validate_metadata.py
 ```
 
+Check whether local content differs from the published version:
+
+```bash
+python src/check_changes.py pages/my-page
+python src/check_changes.py      # all pages
+```
+
 Validate the metadata schema:
 
 ```bash
