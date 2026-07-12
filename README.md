@@ -1,4 +1,4 @@
-# rentry-publish
+# git-to-rentry
 
 Automated publishing pipeline for Rentry pages.
 Push markdown to `main` — your Rentry page updates automatically.

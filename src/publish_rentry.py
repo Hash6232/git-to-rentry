@@ -72,9 +72,7 @@ def build_metadata_string(meta: dict) -> str:
 def check_page_exists(slug: str) -> None:
     """Check if a Rentry page exists. Raises RuntimeError if not."""
     url = f"{RENTRY_BASE}/{slug}"
-    req = urllib.request.Request(url, headers={
-        "User-Agent": "rentry-publish/1.0",
-    })
+    req = urllib.request.Request(url)
     try:
         with urllib.request.urlopen(req) as resp:
             pass
@@ -98,9 +96,7 @@ def fetch_csrf(slug: str) -> tuple[str, http.cookiejar.CookieJar]:
     opener = urllib.request.build_opener(
         urllib.request.HTTPCookieProcessor(jar)
     )
-    req = urllib.request.Request(url, headers={
-        "User-Agent": "rentry-publish/1.0",
-    })
+    req = urllib.request.Request(url)
     with opener.open(req) as resp:
         body = resp.read().decode()
 
@@ -143,7 +139,6 @@ def publish(
         urllib.request.HTTPCookieProcessor(jar)
     )
     req = urllib.request.Request(url, data=data, headers={
-        "User-Agent": "rentry-publish/1.0",
         "Referer": url,
         "Content-Type": "application/x-www-form-urlencoded",
     })

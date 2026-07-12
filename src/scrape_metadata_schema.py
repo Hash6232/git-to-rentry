@@ -28,7 +28,7 @@ PREFIXES = frozenset({
 
 
 def fetch_html(url: str) -> str:
-    req = urllib.request.Request(url, headers={"User-Agent": "rentry-publish/1.0"})
+    req = urllib.request.Request(url)
     with urllib.request.urlopen(req) as resp:
         return resp.read().decode()
 
