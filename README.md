@@ -156,8 +156,8 @@ python src/validate_metadata.py
 
 ```
 .
+├── _example/                 # Reference page to copy from
 ├── pages/                    # Your content — add pages here
-│   └── example/              # Reference page to copy from
 ├── themes/                   # Reusable metadata presets
 │   └── example.yaml          # Starting point for custom themes
 ├── src/                      # Publisher, tooling, and metadata schema

@@ -1,0 +1,19 @@
+# Routing fields
+slug: your-page-slug          # Create on https://rentry.co/new first
+secret_ref: YOUR_PAGE_EDIT_CODE
+
+# Rentry metadata
+PAGE_TITLE: "Your Page Title"
+PAGE_DESCRIPTION: "Description of your page"
+
+ACCESS_RECOMMENDED_THEME:
+  - dark
+
+CONTAINER_MAX_WIDTH:
+  - "900px"
+
+CONTENT_TEXT_ALIGN:
+  - justify
+
+CONTENT_LINK_COLOR:
+  - "#55aaff"

@@ -3,13 +3,13 @@
 
 Usage:
     # Single page
-    python src/publish_rentry.py pages/example --edit-code <code>
+    python src/publish_rentry.py _example --edit-code <code>
 
     # Auto-scan all pages under pages/
     python src/publish_rentry.py --edit-code <code>
 
     # Dry-run (print payload, no POST)
-    python src/publish_rentry.py pages/example --dry-run
+    python src/publish_rentry.py _example --dry-run
 """
 
 import argparse
