@@ -7,14 +7,21 @@ Push markdown to `main` — your Rentry page updates automatically.
 
 ## For CI Users
 
-### 1. Add a page
+### 1. Add pages
 
-Create a directory under `pages/` with two files:
+Each directory under `pages/` becomes a separate Rentry page:
 
 ```
-pages/my-page/
-├── content.md
-└── metadata.yaml
+pages/
+├── blog/
+│   ├── content.md
+│   └── metadata.yaml
+├── about/
+│   ├── content.md
+│   └── metadata.yaml
+└── links/
+    ├── content.md
+    └── metadata.yaml
 ```
 
 `content.md` — your markdown:
@@ -29,7 +36,7 @@ Hello from the automated publishing pipeline!
 
 ```yaml
 slug: my-page
-secret_ref: RENTRY_EDIT_CODE
+secret_ref: MY_PAGE_EDIT_CODE
 
 PAGE_TITLE: "My Page"
 ACCESS_RECOMMENDED_THEME:
@@ -65,11 +72,19 @@ PAGE_TITLE: "My Page"
 
 ### 2. Configure secrets
 
+Each page's `secret_ref` must match a GitHub secret you create:
+
+| Secret name | Used by |
+|---|---|
+| `BLOG_EDIT_CODE` | when `secret_ref: BLOG_EDIT_CODE` in `pages/blog/metadata.yaml` |
+| `ABOUT_EDIT_CODE` | when `secret_ref: ABOUT_EDIT_CODE` in `pages/about/metadata.yaml` |
+| `MY_PAGE_EDIT_CODE` | ...and so on for any page |
+
 1. Go to your repository on GitHub
 2. **Settings** → **Secrets and variables** → **Actions**
-3. Click **New repository secret**
-4. **Name**: `RENTRY_EDIT_CODE`
-5. **Secret**: your Rentry edit code
+3. Click **New repository secret** for each page
+4. **Name**: your secret ref (e.g. `MY_PAGE_EDIT_CODE`)
+5. **Secret**: the page's Rentry edit code
 
 ### 3. Enable GitHub Actions
 
@@ -79,13 +94,15 @@ PAGE_TITLE: "My Page"
 
 ### 4. Push
 
+All pages under `pages/` are published on every push:
+
 ```bash
 git add pages/
 git commit -m "add my page"
 git push origin main
 ```
 
-GitHub Actions will run `src/publish_rentry.py` and update your Rentry page.
+The publisher scans `pages/` and updates each page with its own edit code.
 
 ---
 
