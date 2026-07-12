@@ -2,13 +2,14 @@
 
 ## Branches
 
-- **`dev`** — default branch for all development. Commit freely here.
-- **`main`** — template branch. No direct commits. Squash `dev` into a single
-  commit with `ghost` as both author and committer:
+- **`dev`** — default branch for all development. Commit freely, push normally.
+- **`main`** — template branch. Only updated via squash merge from `dev`.
 
-  ```bash
-  GIT_AUTHOR_NAME="ghost" GIT_AUTHOR_EMAIL="" \
-  GIT_COMMITTER_NAME="ghost" GIT_COMMITTER_EMAIL="" \
-  git commit --amend --no-edit
-  git push origin main --force
-  ```
+## Updating the template
+
+```bash
+git checkout main
+git merge --squash dev
+git commit -m "Updated template"
+git push origin main
+```
