@@ -17,7 +17,17 @@ jobs:
       - name: Install dependencies
         run: pip install pyyaml
 
+      - name: Check for pages
+        id: check-pages
+        run: |
+          if ls pages/*/metadata.yaml 2>/dev/null; then
+            echo "has_pages=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_pages=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Publish pages
+        if: steps.check-pages.outputs.has_pages == 'true'
         env:
           RENTRY_EDIT_CODE: ${{ secrets.RENTRY_EDIT_CODE }}
         run: python src/publish_rentry.py
