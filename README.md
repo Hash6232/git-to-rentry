@@ -40,7 +40,28 @@ ACCESS_RECOMMENDED_THEME:
 |---|---|---|
 | `slug` | Yes | The Rentry URL (`https://rentry.co/my-page`) |
 | `secret_ref` | Yes | Name of the GitHub secret holding your edit code |
+| `theme` | No | Name of a theme in `themes/` (e.g. `example`) — merges defaults overridable by page fields |
 | `PAGE_TITLE` | No | Rentry metadata field (see `schemas/metadata_fields.yaml` for all options) |
+
+### Themes
+
+The `theme` field merges defaults from `themes/<name>.yaml` before publishing. Page-level metadata always overrides theme values. Copy `themes/example.yaml` to create your own:
+
+```yaml
+# themes/my-theme.yaml
+CONTAINER_MAX_WIDTH:
+  - 800px
+CONTENT_TEXT_ALIGN:
+  - left
+```
+
+Then reference it in your page's metadata:
+
+```yaml
+slug: my-page
+theme: my-theme
+PAGE_TITLE: "My Page"
+```
 
 ### 2. Configure secrets
 
@@ -108,6 +129,8 @@ python src/validate_schema.py
 .
 ├── pages/                    # Your content — add pages here
 │   └── example/              # Reference page to copy from
+├── themes/                   # Reusable metadata presets
+│   └── example.yaml          # Starting point for custom themes
 ├── src/                      # Publisher and tooling (run by CI)
 ├── schemas/                  # Auto-generated metadata field definitions
 ├── .github/workflows/        # CI pipeline config

@@ -46,6 +46,16 @@ def discover_pages(base_dir: str = "pages") -> list[str]:
     return pages
 
 
+def load_theme(name: str) -> dict:
+    """Load a theme file from themes/<name>.yaml."""
+    path = os.path.join("themes", f"{name}.yaml")
+    if os.path.isfile(path):
+        with open(path) as f:
+            return yaml.safe_load(f) or {}
+    sys.stderr.write(f"  WARN: theme '{name}' not found at {path}\n")
+    return {}
+
+
 def build_metadata_string(meta: dict) -> str:
     """Convert metadata dict to Rentry's KEY = value per line format."""
     lines = []
@@ -241,7 +251,14 @@ def main():
         # Extract routing fields (not sent to Rentry)
         slug = args.slug or meta.pop("slug", dir_name)
         secret_ref = meta.pop("secret_ref", slug.upper() + "_EDIT_CODE")
-        _ = meta.pop("theme", None)  # reserved for future use
+        theme_name = meta.pop("theme", None)
+
+        # Merge theme defaults (page values take precedence)
+        if theme_name:
+            theme = load_theme(theme_name)
+            merged = dict(theme)
+            merged.update(meta)
+            meta = merged
 
         # Resolve edit code
         edit_code = args.edit_code or os.environ.get(secret_ref)
