@@ -69,22 +69,6 @@ def build_metadata_string(meta: dict) -> str:
     return "\n".join(lines)
 
 
-def check_page_exists(slug: str) -> None:
-    """Check if a Rentry page exists. Raises RuntimeError if not."""
-    url = f"{RENTRY_BASE}/{slug}"
-    req = urllib.request.Request(url)
-    try:
-        with urllib.request.urlopen(req) as resp:
-            pass
-    except urllib.error.HTTPError as e:
-        if e.code == 404:
-            raise RuntimeError(
-                f"Page https://rentry.co/{slug} does not exist.\n"
-                f"  Create it manually at https://rentry.co/ with edit code,\n"
-                f"  then add 'slug: {slug}' to metadata.yaml"
-            )
-        raise RuntimeError(f"HTTP {e.code} when checking page {url}")
-
 
 def fetch_csrf(slug: str) -> tuple[str, http.cookiejar.CookieJar]:
     """GET the edit page and extract CSRF token + cookie jar.
@@ -274,7 +258,6 @@ def main():
             sys.stderr.write(f"  Metadata: {len(metadata_str)} chars\n")
 
         try:
-            check_page_exists(slug)
             publish(slug, edit_code, text, metadata_str, dry_run=args.dry_run)
             if not args.dry_run:
                 sys.stderr.write(f"  OK: Published to https://rentry.co/{slug}\n")
