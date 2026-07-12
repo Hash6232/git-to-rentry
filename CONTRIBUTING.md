@@ -4,5 +4,11 @@
 
 - **`dev`** — default branch for all development. Commit freely here.
 - **`main`** — template branch. No direct commits. Squash `dev` into a single
-  `git commit --amend --author="ghost <>"` when distributing as a template,
-  then `git push origin main --force`.
+  commit with `ghost` as both author and committer:
+
+  ```bash
+  GIT_AUTHOR_NAME="ghost" GIT_AUTHOR_EMAIL="" \
+  GIT_COMMITTER_NAME="ghost" GIT_COMMITTER_EMAIL="" \
+  git commit --amend --no-edit
+  git push origin main --force
+  ```
