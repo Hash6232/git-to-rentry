@@ -6,12 +6,12 @@ Store your pages as Markdown, push to `main`, and GitHub Actions updates every R
 
 ## Features
 
-- 🚀 Publish multiple Rentry pages from one repository
-- 📝 Write pages in plain Markdown
-- 🎨 Reusable themes for shared styling
-- 🔒 Separate edit codes for every page using GitHub Secrets
-- ✅ Metadata validation before publishing
-- ⚙️ Fully automated with GitHub Actions
+* 🚀 Publish multiple Rentry pages from one repository
+* 📝 Write pages in plain Markdown
+* 🎨 Reusable themes for shared styling
+* 🔒 Separate edit codes for every page using GitHub Secrets
+* ✅ Metadata validation before publishing
+* ⚙️ Fully automated with GitHub Actions
 
 ---
 
@@ -21,7 +21,7 @@ Store your pages as Markdown, push to `main`, and GitHub Actions updates every R
 
 Each directory inside `pages/` becomes its own Rentry page.
 
-```
+```text
 pages/
 ├── blog/
 │   ├── content.md
@@ -55,9 +55,9 @@ ACCESS_RECOMMENDED_THEME:
 
 Required fields:
 
-| Field | Description |
-|--------|-------------|
-| `slug` | The Rentry URL (`https://rentry.co/<slug>`) |
+| Field        | Description                                   |
+| ------------ | --------------------------------------------- |
+| `slug`       | The Rentry URL (`https://rentry.co/<slug>`)   |
 | `secret_ref` | GitHub secret containing the page's edit code |
 
 Everything else is optional Rentry metadata.
@@ -104,13 +104,20 @@ Each page needs its own Rentry edit code stored as a repository secret.
 
 Example:
 
-| Secret | Used by |
-|--------|---------|
-| `BLOG_EDIT_CODE` | `pages/blog/metadata.yaml` |
+| Secret            | Used by                     |
+| ----------------- | --------------------------- |
+| `BLOG_EDIT_CODE`  | `pages/blog/metadata.yaml`  |
 | `ABOUT_EDIT_CODE` | `pages/about/metadata.yaml` |
 | `HELLO_EDIT_CODE` | `pages/hello/metadata.yaml` |
 
 Repository → **Settings** → **Secrets and variables** → **Actions** → **New repository secret**
+
+> [!WARNING]
+> **Save your Rentry edit code before adding it as a GitHub Secret.**
+>
+> Rentry only shows a page's edit code once when the page is created. GitHub Secrets are also write-only—once a secret is saved, GitHub will never display its value again. Editing a secret shows an empty value field, allowing you to replace the secret but not view its current value.
+>
+> If you lose the edit code, you won't be able to update that Rentry page through this workflow.
 
 ---
 
@@ -199,7 +206,7 @@ python src/scrape_metadata_schema.py > src/metadata_fields.yaml
 
 # Project Structure
 
-```
+```text
 .
 ├── _example/              # Example page
 ├── pages/                 # Your Rentry pages
