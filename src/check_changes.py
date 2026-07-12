@@ -12,6 +12,8 @@ No edit code needed — reads the public edit page.
 Exits non-zero if any page has changes pending.
 """
 
+import hashlib
+import html
 import os
 import sys
 import urllib.request
@@ -60,7 +62,7 @@ def fetch_live_md(slug: str) -> str:
     m = re.search(r'<textarea[^>]*>(.*?)</textarea>', body, re.DOTALL)
     if not m:
         raise RuntimeError(f"Could not extract textarea from {url}")
-    return m.group(1)
+    return html.unescape(m.group(1))
 
 
 def main():
@@ -95,7 +97,14 @@ def main():
 
         sys.stderr.write(f"  Live:  {len(live)} chars\n")
 
-        if normalize_md(local) == normalize_md(live):
+        local_norm = normalize_md(local)
+        live_norm = normalize_md(live)
+        local_sha = hashlib.sha256(local_norm.encode()).hexdigest()
+        live_sha = hashlib.sha256(live_norm.encode()).hexdigest()
+        sys.stderr.write(f"  Local SHA256: {local_sha}\n")
+        sys.stderr.write(f"  Live  SHA256: {live_sha}\n")
+
+        if local_norm == live_norm:
             sys.stderr.write("  OK: No changes\n")
         else:
             sys.stderr.write("  CHANGED: Local differs from published version\n")

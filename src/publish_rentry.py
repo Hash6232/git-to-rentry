@@ -13,6 +13,8 @@ Usage:
 """
 
 import argparse
+import hashlib
+import html
 import http.cookiejar
 import os
 import re
@@ -103,7 +105,7 @@ def fetch_csrf(slug: str) -> tuple[str, http.cookiejar.CookieJar, str]:
     t = re.search(r'<textarea[^>]*>(.*?)</textarea>', body, re.DOTALL)
     if not m or not t:
         raise RuntimeError(f"Could not extract CSRF token or textarea from {url}")
-    return m.group(1), jar, t.group(1)
+    return m.group(1), jar, html.unescape(t.group(1))
 
 
 def publish(
@@ -125,10 +127,16 @@ def publish(
             sys.stderr.write(f"  metadata ({len(metadata)} chars)\n")
         return ""
 
-    csrf_token, jar, current_text = fetch_csrf(slug)
-    if normalize_md(current_text) == normalize_md(text):
-        sys.stderr.write("  Unchanged, skipping\n")
-        return ""
+        csrf_token, jar, current_text = fetch_csrf(slug)
+        current_norm = normalize_md(current_text)
+        text_norm = normalize_md(text)
+        current_sha = hashlib.sha256(current_norm.encode()).hexdigest()
+        text_sha = hashlib.sha256(text_norm.encode()).hexdigest()
+        sys.stderr.write(f"  Live  SHA256: {current_sha}\n")
+        sys.stderr.write(f"  Local SHA256: {text_sha}\n")
+        if current_norm == text_norm:
+            sys.stderr.write("  Unchanged, skipping\n")
+            return ""
 
     url = f"{RENTRY_BASE}/{slug}/edit"
     data = urllib.parse.urlencode({
