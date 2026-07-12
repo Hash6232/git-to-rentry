@@ -80,7 +80,9 @@ def fetch_csrf(slug: str) -> tuple[str, http.cookiejar.CookieJar]:
     opener = urllib.request.build_opener(
         urllib.request.HTTPCookieProcessor(jar)
     )
-    req = urllib.request.Request(url)
+    req = urllib.request.Request(url, headers={
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    })
     try:
         with opener.open(req) as resp:
             body = resp.read().decode()
@@ -130,6 +132,7 @@ def publish(
         urllib.request.HTTPCookieProcessor(jar)
     )
     req = urllib.request.Request(url, data=data, headers={
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
         "Referer": url,
         "Content-Type": "application/x-www-form-urlencoded",
     })
