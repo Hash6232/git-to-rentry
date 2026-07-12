@@ -42,6 +42,8 @@ pages/
 This page will be published to Rentry.
 ```
 
+For supported Markdown syntax and formatting, see the [Rentry Markdown guide](https://rentry.org/how).
+
 `metadata.yaml`
 
 ```yaml
@@ -62,7 +64,7 @@ Required fields:
 
 Everything else is optional Rentry metadata.
 
-See `src/metadata_fields.yaml` for the complete list of supported metadata fields.
+For the complete list of metadata fields, see the [Rentry Metadata documentation](https://rentry.co/metadata-how).
 
 ---
 
