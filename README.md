@@ -10,7 +10,6 @@ Store your pages as Markdown, push to `main`, and GitHub Actions updates every R
 * 📝 Write pages in plain Markdown
 * 🎨 Reusable themes for shared styling
 * 🔒 Separate edit codes for every page using GitHub Secrets
-* ✅ Metadata validation before publishing
 * ⚙️ Fully automated with GitHub Actions
 * 🔍 Smart change detection — compares local vs live content and only posts when something actually changed
 
@@ -181,20 +180,6 @@ When content hasn't changed, the publisher prints SHA256 hashes and skips the PO
 
 ---
 
-# Validation
-
-Validate a single page:
-
-```bash
-python src/validate_metadata.py pages/my-page
-```
-
-Validate every page:
-
-```bash
-python src/validate_metadata.py
-```
-
 Check whether local content differs from the published version:
 
 ```bash
@@ -203,18 +188,6 @@ python src/check_changes.py      # all pages
 ```
 
 The script prints SHA256 hashes of both the local and live content for transparent comparison. Content is compared after normalizing line endings and decoding HTML entities (Rentry's edit page encodes `<`, `>`, `&` inside the textarea).
-
-Validate the metadata schema:
-
-```bash
-python src/validate_schema.py
-```
-
-If Rentry adds new metadata fields, regenerate the schema:
-
-```bash
-python src/scrape_metadata_schema.py > src/metadata_fields.yaml
-```
 
 ---
 
