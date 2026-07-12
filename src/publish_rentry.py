@@ -81,8 +81,15 @@ def fetch_csrf(slug: str) -> tuple[str, http.cookiejar.CookieJar]:
         urllib.request.HTTPCookieProcessor(jar)
     )
     req = urllib.request.Request(url)
-    with opener.open(req) as resp:
-        body = resp.read().decode()
+    try:
+        with opener.open(req) as resp:
+            body = resp.read().decode()
+    except urllib.error.HTTPError as e:
+        raise RuntimeError(
+            f"Page https://rentry.co/{slug} is inaccessible (HTTP {e.code}).\n"
+            f"  Create it at https://rentry.co/ first, "
+            f"then add 'slug: {slug}' to metadata.yaml"
+        )
 
     m = re.search(r'csrfmiddlewaretoken"\s*value="([^"]+)"', body)
     if not m:
@@ -244,7 +251,7 @@ def main():
         if not edit_code:
             sys.stderr.write(
                 f"  FAIL: no edit code. Add this to .github/workflows/publish.yml:\n"
-                f"    {secret_ref}: \${{{{ secrets.{secret_ref} }}}}\n"
+                f"    {secret_ref}: ${{{{ secrets.{secret_ref} }}}}\n"
             )
             failures += 1
             continue
