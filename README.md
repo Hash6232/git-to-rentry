@@ -12,6 +12,7 @@ Store your pages as Markdown, push to `main`, and GitHub Actions updates every R
 * 🔒 Separate edit codes for every page using GitHub Secrets
 * ✅ Metadata validation before publishing
 * ⚙️ Fully automated with GitHub Actions
+* 🔍 Smart change detection — compares local vs live content and only posts when something actually changed
 
 ---
 
@@ -176,6 +177,8 @@ Publish manually:
 python src/publish_rentry.py pages/my-page --edit-code <code>
 ```
 
+When content hasn't changed, the publisher prints SHA256 hashes and skips the POST with `"Unchanged, skipping"` — the `"Published to"` message only appears when an actual POST happens.
+
 ---
 
 # Validation
@@ -198,6 +201,8 @@ Check whether local content differs from the published version:
 python src/check_changes.py pages/my-page
 python src/check_changes.py      # all pages
 ```
+
+The script prints SHA256 hashes of both the local and live content for transparent comparison. Content is compared after normalizing line endings and decoding HTML entities (Rentry's edit page encodes `<`, `>`, `&` inside the textarea).
 
 Validate the metadata schema:
 
