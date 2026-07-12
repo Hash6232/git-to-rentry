@@ -80,7 +80,7 @@ def check_page_exists(slug: str) -> None:
         if e.code == 404:
             raise RuntimeError(
                 f"Page https://rentry.co/{slug} does not exist.\n"
-                f"  Create it manually at https://rentry.co/new with edit code,\n"
+                f"  Create it manually at https://rentry.co/ with edit code,\n"
                 f"  then add 'slug: {slug}' to metadata.yaml"
             )
         raise RuntimeError(f"HTTP {e.code} when checking page {url}")
