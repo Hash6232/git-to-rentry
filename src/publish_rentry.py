@@ -259,7 +259,8 @@ def main():
         edit_code = args.edit_code or os.environ.get(secret_ref)
         if not edit_code:
             sys.stderr.write(
-                f"  FAIL: no edit code. Provide --edit-code or set env var ${secret_ref}\n"
+                f"  FAIL: no edit code. Add this to .github/workflows/publish.yml:\n"
+                f"    {secret_ref}: \${{{{ secrets.{secret_ref} }}}}\n"
             )
             failures += 1
             continue
