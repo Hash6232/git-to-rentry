@@ -144,14 +144,22 @@ def publish(
     except urllib.error.HTTPError as e:
         body = e.read().decode()
         raise RuntimeError(
-            f"HTTP {e.code}: {extract_error(body) or e.reason}"
+            f"HTTP {e.code}: {extract_generic_error(body) or e.reason}"
+        )
+
+    # Rentry rejects bad metadata by returning 200 with the edit form + errors
+    form_errors = extract_form_errors(body)
+    if form_errors:
+        raise RuntimeError(
+            f"Rentry rejected the submission:\n"
+            + "\n".join(f"  {e}" for e in form_errors)
         )
 
     return body
 
 
-def extract_error(html: str) -> str | None:
-    """Extract error message from Rentry's error page."""
+def extract_generic_error(html: str) -> str | None:
+    """Extract error message from Rentry's generic error page (CSRF, 404, etc)."""
     m = re.search(
         r'<span class="h5[^"]*font-weight-normal[^"]*m-0">([^<]+)',
         html
@@ -159,6 +167,23 @@ def extract_error(html: str) -> str | None:
     if m:
         return m.group(1).strip()
     return None
+
+
+def extract_form_errors(html: str) -> list[str]:
+    """Extract validation error messages from the edit form on failure."""
+    errors = []
+    for m in re.finditer(
+        r'<div class="text-danger messages"[^>]*>(.*?)</div>',
+        html, re.DOTALL
+    ):
+        text = re.sub(r"<[^>]+>", "", m.group(1)).strip()
+        if text:
+            parts = re.split(r"(?<=[.!])(?=[A-Z])", text)
+            for p in parts:
+                p = p.strip()
+                if p:
+                    errors.append(p)
+    return errors
 
 
 def main():
