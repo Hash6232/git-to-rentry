@@ -286,11 +286,11 @@ def main():
             sys.stderr.write(f"  Metadata: {len(metadata_str)} chars\n")
 
         try:
-            publish(slug, edit_code, text, metadata_str, dry_run=args.dry_run)
-            if not args.dry_run:
-                sys.stderr.write(f"  OK: Published to https://rentry.co/{slug}\n")
-            else:
+            result = publish(slug, edit_code, text, metadata_str, dry_run=args.dry_run)
+            if args.dry_run:
                 sys.stderr.write(f"  OK: Dry-run complete\n")
+            elif result:
+                sys.stderr.write(f"  OK: Published to https://rentry.co/{slug}\n")
         except RuntimeError as e:
             msg = str(e)
             if "\n" in msg:
