@@ -69,11 +69,17 @@ def build_metadata_string(meta: dict) -> str:
     return "\n".join(lines)
 
 
+def normalize_md(text: str) -> str:
+    """Normalize line endings and trailing newline for comparison."""
+    text = text.replace("\r\n", "\n")
+    text = text.rstrip("\n") + "\n"
+    return text
 
-def fetch_csrf(slug: str) -> tuple[str, http.cookiejar.CookieJar]:
-    """GET the edit page and extract CSRF token + cookie jar.
 
-    Returns (csrf_token, cookie_jar).
+def fetch_csrf(slug: str) -> tuple[str, http.cookiejar.CookieJar, str]:
+    """GET the edit page and extract CSRF token, cookie jar, and current markdown.
+
+    Returns (csrf_token, cookie_jar, current_text).
     """
     url = f"{RENTRY_BASE}/{slug}/edit"
     jar = http.cookiejar.CookieJar()
@@ -94,9 +100,10 @@ def fetch_csrf(slug: str) -> tuple[str, http.cookiejar.CookieJar]:
         )
 
     m = re.search(r'csrfmiddlewaretoken"\s*value="([^"]+)"', body)
-    if not m:
-        raise RuntimeError(f"Could not extract CSRF token from {url}")
-    return m.group(1), jar
+    t = re.search(r'<textarea[^>]*>(.*?)</textarea>', body, re.DOTALL)
+    if not m or not t:
+        raise RuntimeError(f"Could not extract CSRF token or textarea from {url}")
+    return m.group(1), jar, t.group(1)
 
 
 def publish(
@@ -118,7 +125,10 @@ def publish(
             sys.stderr.write(f"  metadata ({len(metadata)} chars)\n")
         return ""
 
-    csrf_token, jar = fetch_csrf(slug)
+    csrf_token, jar, current_text = fetch_csrf(slug)
+    if normalize_md(current_text) == normalize_md(text):
+        sys.stderr.write("  Unchanged, skipping\n")
+        return ""
 
     url = f"{RENTRY_BASE}/{slug}/edit"
     data = urllib.parse.urlencode({
