@@ -121,6 +121,18 @@ python src/scrape_metadata_schema.py > src/metadata_fields.yaml
 python src/validate_schema.py
 ```
 
+### Validating metadata locally
+
+Check page metadata against the schema before pushing:
+
+```bash
+# Single page
+python src/validate_metadata.py pages/my-page
+
+# All pages
+python src/validate_metadata.py
+```
+
 ---
 
 ## Project structure
