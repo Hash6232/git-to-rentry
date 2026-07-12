@@ -1,0 +1,235 @@
+#!/usr/bin/env python3
+"""Publish a page directory to Rentry.
+
+Usage:
+    # Single page
+    python src/publish_rentry.py pages/example --edit-code <code>
+
+    # Auto-scan all pages under pages/
+    python src/publish_rentry.py --edit-code <code>
+
+    # Dry-run (print payload, no POST)
+    python src/publish_rentry.py pages/example --dry-run
+"""
+
+import argparse
+import http.cookiejar
+import os
+import re
+import sys
+import urllib.parse
+import urllib.request
+import yaml
+
+RENTRY_BASE = "https://rentry.co"
+
+
+def load_yaml(path: str) -> dict:
+    with open(path) as f:
+        return yaml.safe_load(f) or {}
+
+
+def load_text(path: str) -> str:
+    with open(path) as f:
+        return f.read()
+
+
+def discover_pages(base_dir: str = "pages") -> list[str]:
+    if not os.path.isdir(base_dir):
+        return []
+    pages = []
+    for entry in sorted(os.listdir(base_dir)):
+        page_dir = os.path.join(base_dir, entry)
+        content_path = os.path.join(page_dir, "content.md")
+        if os.path.isdir(page_dir) and os.path.isfile(content_path):
+            pages.append(page_dir)
+    return pages
+
+
+def build_metadata_string(meta: dict) -> str:
+    """Convert metadata dict to Rentry's KEY = value per line format."""
+    lines = []
+    for key, value in meta.items():
+        if value is None:
+            continue
+        if isinstance(value, list):
+            lines.append(f"{key} = {' '.join(str(v) for v in value)}")
+        else:
+            lines.append(f"{key} = {value}")
+    return "\n".join(lines)
+
+
+def fetch_csrf(slug: str) -> tuple[str, http.cookiejar.CookieJar]:
+    """GET the edit page and extract CSRF token + cookie jar.
+
+    Returns (csrf_token, cookie_jar).
+    """
+    url = f"{RENTRY_BASE}/{slug}/edit"
+    jar = http.cookiejar.CookieJar()
+    opener = urllib.request.build_opener(
+        urllib.request.HTTPCookieProcessor(jar)
+    )
+    req = urllib.request.Request(url, headers={
+        "User-Agent": "rentry-publish/1.0",
+    })
+    with opener.open(req) as resp:
+        body = resp.read().decode()
+
+    m = re.search(r'csrfmiddlewaretoken"\s*value="([^"]+)"', body)
+    if not m:
+        raise RuntimeError(f"Could not extract CSRF token from {url}")
+    return m.group(1), jar
+
+
+def publish(
+    slug: str,
+    edit_code: str,
+    text: str,
+    metadata: str = "",
+    dry_run: bool = False,
+) -> str:
+    """Publish content to a Rentry page.
+
+    Returns the response body.
+    """
+    csrf_token, jar = fetch_csrf(slug)
+
+    if dry_run:
+        sys.stderr.write(f"[DRY RUN] Would POST to {RENTRY_BASE}/{slug}/edit\n")
+        sys.stderr.write(f"  edit_code={edit_code[:4]}...\n")
+        sys.stderr.write(f"  text ({len(text)} chars)\n")
+        if metadata:
+            sys.stderr.write(f"  metadata ({len(metadata)} chars)\n")
+        return ""
+
+    url = f"{RENTRY_BASE}/{slug}/edit"
+    data = urllib.parse.urlencode({
+        "csrfmiddlewaretoken": csrf_token,
+        "edit_code": edit_code,
+        "text": text,
+        "metadata": metadata,
+    }).encode()
+
+    opener = urllib.request.build_opener(
+        urllib.request.HTTPCookieProcessor(jar)
+    )
+    req = urllib.request.Request(url, data=data, headers={
+        "User-Agent": "rentry-publish/1.0",
+        "Referer": url,
+        "Content-Type": "application/x-www-form-urlencoded",
+    })
+
+    try:
+        with opener.open(req) as resp:
+            body = resp.read().decode()
+    except urllib.error.HTTPError as e:
+        body = e.read().decode()
+        raise RuntimeError(
+            f"HTTP {e.code}: {extract_error(body) or e.reason}"
+        )
+
+    return body
+
+
+def extract_error(html: str) -> str | None:
+    """Extract error message from Rentry's error page."""
+    m = re.search(
+        r'<span class="h5[^"]*font-weight-normal[^"]*m-0">([^<]+)',
+        html
+    )
+    if m:
+        return m.group(1).strip()
+    return None
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Publish a page directory to Rentry"
+    )
+    parser.add_argument(
+        "page_dir", nargs="?", default=None,
+        help="Page directory (auto-scans pages/*/ if omitted)"
+    )
+    parser.add_argument(
+        "--slug", default=None,
+        help="Rentry slug (overrides metadata.yaml)"
+    )
+    parser.add_argument(
+        "--edit-code", default=None,
+        help="Rentry edit code (overrides env var from secret_ref)"
+    )
+    parser.add_argument(
+        "--dry-run", action="store_true",
+        help="Build payload but don't POST"
+    )
+    args = parser.parse_args()
+
+    # Discover pages
+    if args.page_dir:
+        page_dirs = [args.page_dir]
+    else:
+        page_dirs = discover_pages("pages")
+        if not page_dirs:
+            sys.stderr.write("No pages found. Run with a page directory or create pages/<name>/content.md\n")
+            sys.exit(1)
+
+    failures = 0
+
+    for page_dir in page_dirs:
+        dir_name = os.path.basename(os.path.normpath(page_dir))
+        sys.stderr.write(f"\n=== {dir_name} ===\n")
+
+        content_path = os.path.join(page_dir, "content.md")
+        meta_path = os.path.join(page_dir, "metadata.yaml")
+
+        if not os.path.isfile(content_path):
+            sys.stderr.write(f"  SKIP: no content.md in {page_dir}\n")
+            continue
+
+        # Load content
+        text = load_text(content_path)
+
+        # Load metadata
+        meta = {}
+        if os.path.isfile(meta_path):
+            meta = load_yaml(meta_path)
+
+        # Extract routing fields (not sent to Rentry)
+        slug = args.slug or meta.pop("slug", dir_name)
+        secret_ref = meta.pop("secret_ref", slug.upper() + "_EDIT_CODE")
+        _ = meta.pop("theme", None)  # reserved for future use
+
+        # Resolve edit code
+        edit_code = args.edit_code or os.environ.get(secret_ref)
+        if not edit_code:
+            sys.stderr.write(
+                f"  FAIL: no edit code. Provide --edit-code or set env var ${secret_ref}\n"
+            )
+            failures += 1
+            continue
+
+        # Build metadata string
+        metadata_str = build_metadata_string(meta)
+
+        sys.stderr.write(f"  Slug: {slug}\n")
+        sys.stderr.write(f"  Text: {len(text)} chars\n")
+        if metadata_str:
+            sys.stderr.write(f"  Metadata: {len(metadata_str)} chars\n")
+
+        try:
+            publish(slug, edit_code, text, metadata_str, dry_run=args.dry_run)
+            if not args.dry_run:
+                sys.stderr.write(f"  OK: Published to https://rentry.co/{slug}\n")
+            else:
+                sys.stderr.write(f"  OK: Dry-run complete\n")
+        except RuntimeError as e:
+            sys.stderr.write(f"  FAIL: {e}\n")
+            failures += 1
+
+    if failures:
+        sys.stderr.write(f"\n{failures} page(s) failed\n")
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
