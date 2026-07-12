@@ -86,13 +86,26 @@ Each page's `secret_ref` must match a GitHub secret you create:
 4. **Name**: your secret ref (e.g. `MY_PAGE_EDIT_CODE`)
 5. **Secret**: the page's Rentry edit code
 
-### 3. Enable GitHub Actions
+### 3. Add secrets to the workflow
+
+Open `.github/workflows/publish.yml` and add a line for each secret under the `env:` block:
+
+```yaml
+      - name: Publish pages
+        if: steps.check-pages.outputs.has_pages == 'true'
+        env:
+          MY_PAGE_EDIT_CODE: ${{ secrets.MY_PAGE_EDIT_CODE }}
+          BLOG_EDIT_CODE: ${{ secrets.BLOG_EDIT_CODE }}
+        run: python src/publish_rentry.py
+```
+
+### 4. Enable GitHub Actions
 
 1. Go to your repository on GitHub
 2. **Actions** tab
 3. If prompted, click **I understand my workflows, go ahead and enable them**
 
-### 4. Push
+### 5. Push
 
 All pages under `pages/` are published on every push:
 
@@ -162,5 +175,6 @@ python src/validate_metadata.py
 │   └── example.yaml          # Starting point for custom themes
 ├── src/                      # Publisher, tooling, and metadata schema
 ├── .github/workflows/        # CI pipeline config
-└── requirements.txt
+├── CONTRIBUTING.md           # Branch workflow and conventions
+├── requirements.txt
 ```
