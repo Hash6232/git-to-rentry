@@ -160,7 +160,7 @@ def validate_field(
                 if any(vt in validate_one for vt in ["color_name", "color_hex", "color_rgba"]):
                     errors.append(f"{field_name} : {color_valid}")
 
-        if sv.startswith("http") and "url" in validate_one or "url" in validate_all:
+        if sv.startswith("http") and ("url" in validate_one or "url" in validate_all):
             url_err = validate_url(sv)
             if url_err:
                 errors.append(f"{field_name} : {url_err}")

@@ -21,15 +21,16 @@ URL = "https://rentry.co/metadata-how"
 PREFIXES = frozenset({
     "Default Value:", "Max Length:", "Max Values Accepted:",
     "Validate All:", "Validate One:", "Requires:", "Requires One:",
-    "Units and Ranges For", "Permitted whitelisted_string Values:",
+    "Units and Ranges For",     "Permitted whitelisted_string Values:",
     "Value Mapping:", "Value List:", "Reference:",
-    "Permitted whitelisted_string Values",
 })
 
 
 def fetch_html(url: str) -> str:
-    req = urllib.request.Request(url)
-    with urllib.request.urlopen(req) as resp:
+    req = urllib.request.Request(url, headers={
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    })
+    with urllib.request.urlopen(req, timeout=30) as resp:
         return resp.read().decode()
 
 
@@ -44,6 +45,11 @@ def strip_tags(text: str) -> str:
 
 def extract_balanced_div(html: str, start: int, tag_class: str) -> tuple[str, int]:
     """Extract a balanced <div class='...'> block starting at `start`.
+
+    NOTE: This depth-tracker is brittle to void/self-closing tags inside
+    divs. Verified zero such tags in the metadata-options section of
+    rentry.co/metadata-how as of 2026-07-12. Re-check if the scraper
+    ever misparses.
 
     Returns (content_between_tags, end_position_of_closing_tag).
     """
@@ -78,13 +84,6 @@ def extract_balanced_div(html: str, start: int, tag_class: str) -> tuple[str, in
 
 def parse_groups(html_content: str) -> list[dict]:
     groups = []
-    # Find each GROUP: header
-    for m in re.finditer(r'<h4>GROUP:\s*(\w+)</h4>', html_content):
-        group_name = m.group(1)
-        group_start = m.end()
-        # Also look for metadata-group-container around this header
-        # to get the full group section
-    # Better approach: split by group headers within metadata-options-container
     meta_start = html_content.find('<h3>Metadata Options</h3>')
     if meta_start == -1:
         return groups
@@ -173,7 +172,10 @@ def extract_text_list(html_fragment: str, list_tag: str) -> list[str]:
 
 
 def parse_option(html_fragment: str) -> dict:
-    field_name = strip_tags(re.search(r'<h5>(.*?)</h5>', html_fragment).group(1))
+    h5_m = re.search(r'<h5>(.*?)</h5>', html_fragment)
+    if not h5_m:
+        raise RuntimeError("Missing <h5> field name in option block")
+    field_name = strip_tags(h5_m.group(1))
 
     description = ""
     default = None
@@ -230,6 +232,8 @@ def parse_option(html_fragment: str) -> dict:
         elif not any(p_text.startswith(prefix) for prefix in PREFIXES):
             if not description:
                 description = p_text
+            else:
+                sys.stderr.write(f"  WARN: unmatched paragraph in {field_name}: {p_text[:80]}\n")
         i += 1
 
     result = {
