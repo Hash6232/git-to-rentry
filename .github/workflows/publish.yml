@@ -28,8 +28,7 @@ jobs:
 
       - name: Publish pages
         if: steps.check-pages.outputs.has_pages == 'true'
-        env:
-          # Add one line per page matching secret_ref in metadata.yaml:
-          # BLOG_EDIT_CODE: ${{ secrets.BLOG_EDIT_CODE }}
-          # ABOUT_EDIT_CODE: ${{ secrets.ABOUT_EDIT_CODE }}
+        # env:
+        #   BLOG_EDIT_CODE: ${{ secrets.BLOG_EDIT_CODE }}
+        #   ABOUT_EDIT_CODE: ${{ secrets.ABOUT_EDIT_CODE }}
         run: python src/publish_rentry.py
