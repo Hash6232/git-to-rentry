@@ -268,7 +268,13 @@ def main():
             else:
                 sys.stderr.write(f"  OK: Dry-run complete\n")
         except RuntimeError as e:
-            sys.stderr.write(f"  FAIL: {e}\n")
+            msg = str(e)
+            if "\n" in msg:
+                sys.stderr.write(f"  FAIL:\n")
+                for line in msg.split("\n"):
+                    sys.stderr.write(f"    {line}\n")
+            else:
+                sys.stderr.write(f"  FAIL: {msg}\n")
             failures += 1
 
     if failures:
