@@ -102,7 +102,7 @@ Each page needs its own Rentry edit code stored as a repository secret.
 
 Example:
 
-| Secret            | Used by                     |
+| Secret name       | Used by                     |
 | ----------------- | --------------------------- |
 | `BLOG_EDIT_CODE`  | `pages/blog/metadata.conf`  |
 | `ABOUT_EDIT_CODE` | `pages/about/metadata.conf` |
