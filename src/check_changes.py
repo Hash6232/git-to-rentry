@@ -28,10 +28,17 @@ def load_text(path: str) -> str:
         return f.read()
 
 
-def load_yaml(path: str) -> dict:
-    import yaml
-    with open(path) as f:
-        return yaml.safe_load(f) or {}
+def parse_metadata(text: str) -> dict:
+    """Parse Rentry's KEY = value format into a dict."""
+    meta = {}
+    for line in text.splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if "=" in line:
+            key, _, value = line.partition("=")
+            meta[key.strip()] = value.strip()
+    return meta
 
 
 def normalize_md(text: str) -> str:
@@ -79,9 +86,9 @@ def main():
     for page_dir in page_dirs:
         name = os.path.basename(page_dir)
         content_path = os.path.join(page_dir, "content.md")
-        meta_path = os.path.join(page_dir, "metadata.yaml")
+        meta_path = os.path.join(page_dir, "metadata.conf")
         local = load_text(content_path)
-        meta = load_yaml(meta_path) if os.path.isfile(meta_path) else {}
+        meta = parse_metadata(load_text(meta_path)) if os.path.isfile(meta_path) else {}
         slug = meta.get("slug", name)
 
         sys.stderr.write(f"\n=== {name} ===\n")

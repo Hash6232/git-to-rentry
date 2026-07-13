@@ -37,6 +37,19 @@ def load_text(path: str) -> str:
         return f.read()
 
 
+def parse_metadata(text: str) -> dict:
+    """Parse Rentry's KEY = value format into a dict."""
+    meta = {}
+    for line in text.splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if "=" in line:
+            key, _, value = line.partition("=")
+            meta[key.strip()] = value.strip()
+    return meta
+
+
 def discover_pages(base_dir: str = "pages") -> list[str]:
     if not os.path.isdir(base_dir):
         return []
@@ -103,7 +116,7 @@ def fetch_csrf(slug: str) -> tuple[str, http.cookiejar.CookieJar, str]:
         raise RuntimeError(
             f"Page https://rentry.co/{slug} is inaccessible (HTTP {e.code}).\n"
             f"  Create it at https://rentry.co/ first, "
-            f"then add 'slug: {slug}' to metadata.yaml"
+            f"then add 'slug: {slug}' to metadata.conf"
         )
     except urllib.error.URLError as e:
         raise RuntimeError(
@@ -220,7 +233,7 @@ def main():
     )
     parser.add_argument(
         "--slug", default=None,
-        help="Rentry slug (overrides metadata.yaml)"
+        help="Rentry slug (overrides metadata.conf)"
     )
     parser.add_argument(
         "--edit-code", default=None,
@@ -248,7 +261,7 @@ def main():
         sys.stderr.write(f"\n=== {dir_name} ===\n")
 
         content_path = os.path.join(page_dir, "content.md")
-        meta_path = os.path.join(page_dir, "metadata.yaml")
+        meta_path = os.path.join(page_dir, "metadata.conf")
 
         if not os.path.isfile(content_path):
             sys.stderr.write(f"  SKIP: no content.md in {page_dir}\n")
@@ -260,7 +273,7 @@ def main():
         # Load metadata
         meta = {}
         if os.path.isfile(meta_path):
-            meta = load_yaml(meta_path)
+            meta = parse_metadata(load_text(meta_path))
 
         # Extract routing fields (not sent to Rentry)
         slug = args.slug or meta.pop("slug", dir_name)

@@ -25,13 +25,13 @@ Each directory inside `pages/` becomes its own Rentry page.
 pages/
 ├── blog/
 │   ├── content.md
-│   └── metadata.yaml
+│   └── metadata.conf
 ├── about/
 │   ├── content.md
-│   └── metadata.yaml
+│   └── metadata.conf
 └── links/
     ├── content.md
-    └── metadata.yaml
+    └── metadata.conf
 ```
 
 `content.md`
@@ -44,15 +44,14 @@ This page will be published to Rentry.
 
 For supported Markdown syntax and formatting, see the [Rentry Markdown guide](https://rentry.org/how).
 
-`metadata.yaml`
+`metadata.conf`
 
-```yaml
-slug: hello
-secret_ref: HELLO_EDIT_CODE
+```text
+slug = hello
+secret_ref = HELLO_EDIT_CODE
 
-PAGE_TITLE: "Hello"
-ACCESS_RECOMMENDED_THEME:
-  - dark
+PAGE_TITLE = Hello
+ACCESS_RECOMMENDED_THEME = dark
 ```
 
 Required fields:
@@ -86,17 +85,17 @@ CONTENT_TEXT_ALIGN:
 
 Then reference it from your page:
 
-```yaml
-slug: hello
-secret_ref: HELLO_EDIT_CODE
-theme: blog
+```text
+slug = hello
+secret_ref = HELLO_EDIT_CODE
+theme = blog
 
-PAGE_TITLE: Hello
+PAGE_TITLE = Hello
 ```
 
 Theme values are merged first.
 
-Values defined in `metadata.yaml` always override the theme.
+Values defined in `metadata.conf` always override the theme.
 
 ---
 
@@ -108,9 +107,9 @@ Example:
 
 | Secret            | Used by                     |
 | ----------------- | --------------------------- |
-| `BLOG_EDIT_CODE`  | `pages/blog/metadata.yaml`  |
-| `ABOUT_EDIT_CODE` | `pages/about/metadata.yaml` |
-| `HELLO_EDIT_CODE` | `pages/hello/metadata.yaml` |
+| `BLOG_EDIT_CODE`  | `pages/blog/metadata.conf`  |
+| `ABOUT_EDIT_CODE` | `pages/about/metadata.conf` |
+| `HELLO_EDIT_CODE` | `pages/hello/metadata.conf` |
 
 Repository → **Settings** → **Secrets and variables** → **Actions** → **New repository secret**
 
