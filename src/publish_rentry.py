@@ -24,6 +24,7 @@ import urllib.request
 import yaml
 
 RENTRY_BASE = "https://rentry.co"
+USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
 
 
 def load_yaml(path: str) -> dict:
@@ -78,27 +79,35 @@ def normalize_md(text: str) -> str:
     return text
 
 
+def _build_opener(jar: http.cookiejar.CookieJar | None = None):
+    jar = jar or http.cookiejar.CookieJar()
+    return jar, urllib.request.build_opener(
+        urllib.request.HTTPCookieProcessor(jar)
+    )
+
+
 def fetch_csrf(slug: str) -> tuple[str, http.cookiejar.CookieJar, str]:
     """GET the edit page and extract CSRF token, cookie jar, and current markdown.
 
     Returns (csrf_token, cookie_jar, current_text).
     """
     url = f"{RENTRY_BASE}/{slug}/edit"
-    jar = http.cookiejar.CookieJar()
-    opener = urllib.request.build_opener(
-        urllib.request.HTTPCookieProcessor(jar)
-    )
+    jar, opener = _build_opener()
     req = urllib.request.Request(url, headers={
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "User-Agent": USER_AGENT,
     })
     try:
-        with opener.open(req) as resp:
+        with opener.open(req, timeout=30) as resp:
             body = resp.read().decode()
     except urllib.error.HTTPError as e:
         raise RuntimeError(
             f"Page https://rentry.co/{slug} is inaccessible (HTTP {e.code}).\n"
             f"  Create it at https://rentry.co/ first, "
             f"then add 'slug: {slug}' to metadata.yaml"
+        )
+    except urllib.error.URLError as e:
+        raise RuntimeError(
+            f"Could not reach {url}: {e.reason}"
         )
 
     m = re.search(r'csrfmiddlewaretoken"\s*value="([^"]+)"', body)
@@ -146,11 +155,9 @@ def publish(
         "metadata": metadata,
     }).encode()
 
-    opener = urllib.request.build_opener(
-        urllib.request.HTTPCookieProcessor(jar)
-    )
+    _, opener = _build_opener(jar)
     req = urllib.request.Request(url, data=data, headers={
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+        "User-Agent": USER_AGENT,
         "Referer": url,
         "Content-Type": "application/x-www-form-urlencoded",
     })
@@ -175,23 +182,23 @@ def publish(
     return body
 
 
-def extract_generic_error(html: str) -> str | None:
+def extract_generic_error(body: str) -> str | None:
     """Extract error message from Rentry's generic error page (CSRF, 404, etc)."""
     m = re.search(
         r'<span class="h5[^"]*font-weight-normal[^"]*m-0">([^<]+)',
-        html
+        body
     )
     if m:
         return m.group(1).strip()
     return None
 
 
-def extract_form_errors(html: str) -> list[str]:
+def extract_form_errors(body: str) -> list[str]:
     """Extract validation error messages from the edit form on failure."""
     errors = []
     for m in re.finditer(
         r'<div class="text-danger messages"[^>]*>(.*?)</div>',
-        html, re.DOTALL
+        body, re.DOTALL
     ):
         text = re.sub(r"<[^>]+>", "", m.group(1)).strip()
         if text:
