@@ -46,7 +46,7 @@ For supported Markdown syntax and formatting, see the [Rentry Markdown guide](ht
 
 `metadata.conf`
 
-```text
+```conf
 slug = hello
 secret_ref = HELLO_EDIT_CODE
 
@@ -73,19 +73,16 @@ Themes provide reusable metadata defaults.
 
 Create a file like:
 
-```yaml
-# themes/blog.yaml
+```conf
+# themes/blog.conf
 
-CONTAINER_MAX_WIDTH:
-  - 800px
-
-CONTENT_TEXT_ALIGN:
-  - left
+CONTAINER_MAX_WIDTH = 800px
+CONTENT_TEXT_ALIGN = left
 ```
 
 Then reference it from your page:
 
-```text
+```conf
 slug = hello
 secret_ref = HELLO_EDIT_CODE
 theme = blog
@@ -145,11 +142,6 @@ Open the repository's **Actions** tab and enable workflows if prompted.
 
 ## 6. Push
 
-```bash
-git add pages/
-git commit -m "Update pages"
-git push origin main
-```
 
 The workflow scans every directory in `pages/` and publishes each page using its own edit code.
 
@@ -157,11 +149,7 @@ The workflow scans every directory in `pages/` and publishes each page using its
 
 # Local Development
 
-Install dependencies:
-
-```bash
-pip install pyyaml
-```
+No external dependencies required — the publisher uses only Python standard library.
 
 Dry run:
 
@@ -200,5 +188,4 @@ The script prints SHA256 hashes of both the local and live content for transpare
 ├── src/                   # Publisher and tooling
 ├── .github/workflows/     # GitHub Actions
 ├── CONTRIBUTING.md
-└── requirements.txt
 ```
