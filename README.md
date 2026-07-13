@@ -59,7 +59,7 @@ Required fields:
 | Field        | Description                                   |
 | ------------ | --------------------------------------------- |
 | `slug`       | The Rentry URL (`https://rentry.co/<slug>`)   |
-| `secret_ref` | GitHub secret containing the page's edit code |
+| `secret_ref` | Name of the GitHub secret (env var) that stores the edit code |
 
 Everything else is optional Rentry metadata.
 
@@ -102,7 +102,7 @@ Each page needs its own Rentry edit code stored as a repository secret.
 
 Example:
 
-| Secret            | Used by                     |
+| Secret name       | Used by                     |
 | ----------------- | --------------------------- |
 | `BLOG_EDIT_CODE`  | `pages/blog/metadata.conf`  |
 | `ABOUT_EDIT_CODE` | `pages/about/metadata.conf` |

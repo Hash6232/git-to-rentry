@@ -14,13 +14,10 @@ jobs:
         with:
           python-version: "3.x"
 
-      - name: Install dependencies
-        run: pip install pyyaml
-
       - name: Check for pages
         id: check-pages
         run: |
-          if ls pages/*/metadata.yaml 2>/dev/null; then
+          if ls pages/*/metadata.conf 2>/dev/null; then
             echo "has_pages=true" >> "$GITHUB_OUTPUT"
           else
             echo "has_pages=false" >> "$GITHUB_OUTPUT"
@@ -29,6 +26,5 @@ jobs:
       - name: Publish pages
         if: steps.check-pages.outputs.has_pages == 'true'
         # env:
-        #   BLOG_EDIT_CODE: ${{ secrets.BLOG_EDIT_CODE }}
-        #   ABOUT_EDIT_CODE: ${{ secrets.ABOUT_EDIT_CODE }}
+        #   MY_PAGE_EDIT_CODE: ${{ secrets.MY_PAGE_EDIT_CODE }}
         run: python src/publish_rentry.py
