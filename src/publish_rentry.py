@@ -21,15 +21,9 @@ import re
 import sys
 import urllib.parse
 import urllib.request
-import yaml
 
 RENTRY_BASE = "https://rentry.co"
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-
-
-def load_yaml(path: str) -> dict:
-    with open(path) as f:
-        return yaml.safe_load(f) or {}
 
 
 def load_text(path: str) -> str:
@@ -63,11 +57,10 @@ def discover_pages(base_dir: str = "pages") -> list[str]:
 
 
 def load_theme(name: str) -> dict:
-    """Load a theme file from themes/<name>.yaml."""
-    path = os.path.join("themes", f"{name}.yaml")
+    """Load a theme file from themes/<name>.conf."""
+    path = os.path.join("themes", f"{name}.conf")
     if os.path.isfile(path):
-        with open(path) as f:
-            return yaml.safe_load(f) or {}
+        return parse_metadata(load_text(path))
     sys.stderr.write(f"  WARN: theme '{name}' not found at {path}\n")
     return {}
 

@@ -46,7 +46,7 @@ For supported Markdown syntax and formatting, see the [Rentry Markdown guide](ht
 
 `metadata.conf`
 
-```text
+```conf
 slug = hello
 secret_ref = HELLO_EDIT_CODE
 
@@ -73,19 +73,16 @@ Themes provide reusable metadata defaults.
 
 Create a file like:
 
-```yaml
-# themes/blog.yaml
+```conf
+# themes/blog.conf
 
-CONTAINER_MAX_WIDTH:
-  - 800px
-
-CONTENT_TEXT_ALIGN:
-  - left
+CONTAINER_MAX_WIDTH = 800px
+CONTENT_TEXT_ALIGN = left
 ```
 
 Then reference it from your page:
 
-```text
+```conf
 slug = hello
 secret_ref = HELLO_EDIT_CODE
 theme = blog
@@ -160,7 +157,7 @@ The workflow scans every directory in `pages/` and publishes each page using its
 Install dependencies:
 
 ```bash
-pip install pyyaml
+pip install -r requirements.txt
 ```
 
 Dry run:
