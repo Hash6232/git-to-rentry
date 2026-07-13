@@ -142,11 +142,6 @@ Open the repository's **Actions** tab and enable workflows if prompted.
 
 ## 6. Push
 
-```bash
-git add pages/
-git commit -m "Update pages"
-git push origin main
-```
 
 The workflow scans every directory in `pages/` and publishes each page using its own edit code.
 
@@ -154,11 +149,7 @@ The workflow scans every directory in `pages/` and publishes each page using its
 
 # Local Development
 
-Install dependencies:
-
-```bash
-pip install -r requirements.txt
-```
+No external dependencies required — the publisher uses only Python standard library.
 
 Dry run:
 
@@ -197,5 +188,4 @@ The script prints SHA256 hashes of both the local and live content for transpare
 ├── src/                   # Publisher and tooling
 ├── .github/workflows/     # GitHub Actions
 ├── CONTRIBUTING.md
-└── requirements.txt
 ```
